@@ -144,14 +144,18 @@ jobs:
           submodules: recursive
       - name: Install dependencies
         run: |
-          brew update
-          brew install cmake gcc ninja fontconfig
+          arch -${{ matrix.arch }} /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          if [ "${{ runner.arch }}" == "arm64" ]; then
+            arch -${{ matrix.arch }} /opt/homebrew/bin/brew install cmake gcc ninja fontconfig
+          else
+            arch -${{ matrix.arch }} /usr/local/bin/brew install cmake gcc ninja fontconfig
+          fi
       - name: Configure
         run: cmake --preset "macos-ci-${{ matrix.arch }}"
       - name: Build and Package
         run: |
-          cmake --build .
-          cpack --config CPackConfig.cmake
+          arch -${{ matrix.arch }} cmake --build .
+          arch -${{ matrix.arch }} cpack --config CPackConfig.cmake
         working-directory: build
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
